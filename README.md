@@ -3,7 +3,8 @@ This code is meant to open Micro Air Vehicle (MAV) flights data, simulate flight
 
 ## Prerequisites
 This code requires Python 3 to be installed on your machine. It can be downloaded [here](https://www.python.org/downloads).
-It also requires the following the Numpy, Matplotlib and SciPy modules to be installed. This can be done by running the following commands if Pip was installed with Python:
+
+The Numpy, Matplotlib and SciPy modules are also required to be installed. This can be done by running the following commands if Pip was installed with Python:
 ```
 pip install numpy
 pip install matplotlib
