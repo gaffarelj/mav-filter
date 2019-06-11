@@ -112,7 +112,7 @@ s_r, s_q, error = optimiser.optimise(time, rssi_unf, gt, gt_rel, mesh_ref=15, R_
 ```
 
 ## License
-This project is licensed under the GNU General Public License - see the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the GNU General Public License - see the [LICENSE](LICENSE) file for details.
 
 ## Authors
 This code was produced as a student work for the Test, Analysis and Simulation (AE2223-I) course given to the second-year bachelors in the faculty of Aerospace Engineering, at the Delft University of Technology.
