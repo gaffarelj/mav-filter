@@ -11,7 +11,7 @@ pip install scipy
 ```
 
 ## Modules
-The main file is [mav-filter.py](mav-filter.py). ALongside it, 4 different modules were written.
+The main file is [mav_filter.py](mav_filter.py). ALongside it, 4 different modules were written.
 
 ### Data
 [data.py](data.py) is a module meant to open the MAV flights meausurements.
