@@ -132,9 +132,9 @@ All of the correlations in the simulation are close to 0. That is because the no
 ### Optimisation
 The SD giving the lowest average error in range in the filter are also reported in the [results](results.csv) file. 
 
-Averaging the results, the best SD for the R matrix are: 11.44823232 for the first SD, and 0.160505051 for the 3 last ones.
+Averaging the results, the best SD for the R matrix are: 11.45 for the first SD, and 0.16 for the 3 last ones.
 
-The best SD for the Q matrix are: 0.0275 for the first SD, and 0.183080808 for the 3 last ones.
+The best SD for the Q matrix are: 0.0275 for the first SD, and 0.183 for the 3 last ones.
 
 These results were computed using a mesh refinement parameter of 15, and ranges of [0.5, 15] and [0.01, 1.5] for the SD of the R matrix, and ranges [0.01, 1] and [0.01, 1.5] for the SD of the Q matrix.
 
