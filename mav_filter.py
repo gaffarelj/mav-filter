@@ -72,7 +72,7 @@ ite = -1
 
 opti_choice = get_choice(0, 1, "Enter 0 for direct filtering or 1 for optimisation: ")
 if opti_choice == 0:
-	s_r, s_q = [5, 0.2], [0.1, 0.5]
+	s_r, s_q = [11.44823232, 0.160505051], [0.0275, 0.183080808]
 else:
 	s_r, s_q, error = optimiser.optimise(time, rssi_unf, gt, gt_rel, fnumber=sim_case, sim=(sim_choice == 1))
 
