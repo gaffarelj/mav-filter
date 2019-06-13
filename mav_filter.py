@@ -22,7 +22,7 @@ def plot(time, x_f, x_g, x_u, ylabel, fname, simchoice, it0=0, ite=-1):
 	plt.grid()
 	plt.legend(loc="upper right")
 	plt.savefig(fname)
-	#plt.show()
+	plt.show()
 	plt.close()
 
 def save_csv(data, line):
@@ -101,7 +101,7 @@ if sim_choice == 1:
 	plt.xlabel("X position [m]")
 	plt.grid()
 	plt.legend(loc="upper right")
-	#plt.show()
+	plt.show()
 	plt.savefig("plots/sims/" + str(sim_case) + "_path.pdf")
 	plt.close()
 plot(time, vel_f, vel_g, [0], "Relative velocity [m/s]", str(sim_case) + "_rel_velocity", sim_choice, it0=it0, ite=ite)
