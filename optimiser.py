@@ -73,7 +73,7 @@ def opti(Sa, Sb, other, m, opti_r, time, rssi_unf, gt, gt_rel, fnumber, sim):
 	cb.locator = tick_locator
 	cb.update_ticks()
 	plt.savefig("plots/optimisation/" + situation + "/" + str(fnumber) + "_" + opti_m + ".pdf")
-	#plt.show()
+	plt.show()
 	plt.close()
 
 	xmin, ymin = np.unravel_index(np.argmin(np.fabs(grid_z)), grid_z.shape)
