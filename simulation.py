@@ -19,16 +19,16 @@ def simulate(time, simcase=1):
 	"""
 	n = len(time)
 
-	dt = time[1] - time[0]						# Timestep is calculated
-	mav = []									# Empty list is initialised for dict with the x and y velocities + positions of the two mav's
+	dt = time[1] - time[0]				# Timestep is calculated
+	mav = []					# Empty list is initialised for dict with the x and y velocities + positions of the two mav's
 	vx, vy, x0, y0 = create_vx(time, simcase)	# Velocities and initial positions are generated for the given simulation case
 
 	# Initialistion of the dict containing the measured positions
 	mav.append({"vx": vx[0], "vy": vy[0], "x":[x0[0]] * n, "y":[y0[0]] * n})
 	mav.append({"vx": vx[1], "vy": vy[1], "x":[x0[1]] * n, "y":[y0[1]] * n})	
 	mav_rel = {"x":np.ones(n), "y":np.ones(n), "z":np.zeros(n)}					
-	rssis = np.ones(n)    # array is initialised for the measured RSSI
-	dists = np.zeros(n)   # array is initialised for the distance between the two MAVs
+	rssis = np.ones(n)   				# array is initialised for the measured RSSI
+	dists = np.zeros(n)   				# array is initialised for the distance between the two MAVs
 
 	for i in range(1, n):
 		x0n = mav[0]["x"][i - 1] + mav[0]["vx"][i] * dt		# x position at time t is the pos at t + velocity*dt
@@ -36,15 +36,15 @@ def simulate(time, simcase=1):
 		# same for the second MAV
 		x1n = mav[1]["x"][i - 1] + mav[1]["vx"][i] * dt
 		y1n = mav[1]["y"][i - 1] + mav[1]["vy"][i] * dt
-		x_rel = x1n - x0n									# relative velocity between the two MAVs in the x direction
-		y_rel = y1n - y0n									# same in y direction
-		dist = np.sqrt(x_rel ** 2 + y_rel ** 2)				# relative distance between the two MAVs
+		x_rel = x1n - x0n					# relative velocity between the two MAVs in the x direction
+		y_rel = y1n - y0n					# same in y direction
+		dist = np.sqrt(x_rel ** 2 + y_rel ** 2)			# relative distance between the two MAVs
 		# If the distance is nonzero, the RSSI can be calculated with the log function. Otherwise it is set to -88 [dB]
 		if dist != 0:
 			rssi = -68 - 20 * np.log10(dist)
 		else:
 			rssi = -88
-		rssi += np.random.normal(0, 1.5)					# random noise is added to the computed RSSI
+		rssi += np.random.normal(0, 1.5)			# random noise is added to the computed RSSI
 
 		# Computed positions are saved in the dict
 		mav[0]["x"][i] = x0n
@@ -62,14 +62,14 @@ def simulate(time, simcase=1):
 
 def create_vx(time, simcase=1):
 	n = len(time)
-	vx = [0]*2				# list for the x velocities for mav 0 and mav 1 * 2
-	vy = [0]*2				# list for the y velocities for mav 0 and mav 1 * 2
-	x = [1,1]				# set default initial position (will be overwriten for some simcase)
+	vx = [0]*2							# list for the x velocities for mav 0 and mav 1 * 2
+	vy = [0]*2							# list for the y velocities for mav 0 and mav 1 * 2
+	x = [1,1]							# set default initial position (will be overwriten for some simcase)
 	y = [1,1]		
 
 	# Switch between the 10 different simulation cases
 	if simcase == 1:
-		noiselevel = 0.5	# define the SD of the noise in the velocity
+		noiselevel = 0.5					# define the SD of the noise in the velocity
 		# Define vx and vy, for both MAVs, following variations of sinuosidal
 		vx[0] = time ** 0.5 * np.sin(0.15 * time) + np.random.normal(0, noiselevel, n)
 		vx[1] = time ** 0.5 * np.sin(0.15 * time - 3) + np.random.normal(0, noiselevel, n)
@@ -131,7 +131,7 @@ def create_vx(time, simcase=1):
 		y = [0.75, 1]
 	elif simcase == 9:
 		noiselevel = 0.01
-		sf = 2				# Speed factor
+		sf = 2							# Speed factor
 		vx[0] = np.sin(0.1*sf*time) + np.random.normal(0, noiselevel / 2, n)
 		vy[0] = np.cos(0.1*sf*time) + np.random.normal(0, noiselevel / 2, n)
 		vx[1] = np.sin(0.1*sf*time+np.pi/2) + np.random.normal(0, noiselevel / 2, n)
