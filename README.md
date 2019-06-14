@@ -100,6 +100,7 @@ It takes the following inputs:
     * fnumber: int: flight number or simulation case (id of the file that will be saved)
     * sim: bool: specify if a simulation is being optimised or a real flight
     * mesh_ref: mesh refinement for finding the optimum SD combination
+    * R/Q_range: range of SDs to be tested
     
 It then outputs the followings:
 * s_r: list containing the optimum SD for the R matrix
