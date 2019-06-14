@@ -62,14 +62,14 @@ def simulate(time, simcase=1):
 
 def create_vx(time, simcase=1):
 	n = len(time)
-	vx = [0]*2							# list for the x velocities for mav 0 and mav 1 * 2
-	vy = [0]*2							# list for the y velocities for mav 0 and mav 1 * 2
-	x = [1,1]							# set default initial position (will be overwriten for some simcase)
+	vx = [0]*2			# list for the x velocities for mav 0 and mav 1 * 2
+	vy = [0]*2			# list for the y velocities for mav 0 and mav 1 * 2
+	x = [1,1]			# set default initial position (will be overwriten for some simcase)
 	y = [1,1]		
 
 	# Switch between the 10 different simulation cases
 	if simcase == 1:
-		noiselevel = 0.5					# define the SD of the noise in the velocity
+		noiselevel = 0.5	# define the SD of the noise in the velocity
 		# Define vx and vy, for both MAVs, following variations of sinuosidal
 		vx[0] = time ** 0.5 * np.sin(0.15 * time) + np.random.normal(0, noiselevel, n)
 		vx[1] = time ** 0.5 * np.sin(0.15 * time - 3) + np.random.normal(0, noiselevel, n)
@@ -131,7 +131,7 @@ def create_vx(time, simcase=1):
 		y = [0.75, 1]
 	elif simcase == 9:
 		noiselevel = 0.01
-		sf = 2							# Speed factor
+		sf = 2			# Speed factor
 		vx[0] = np.sin(0.1*sf*time) + np.random.normal(0, noiselevel / 2, n)
 		vy[0] = np.cos(0.1*sf*time) + np.random.normal(0, noiselevel / 2, n)
 		vx[1] = np.sin(0.1*sf*time+np.pi/2) + np.random.normal(0, noiselevel / 2, n)
