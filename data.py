@@ -13,7 +13,7 @@ def get_data(flight=1):
 	Outputs:
 		* gt/onb: list containing arrays, containing the desired data extracted from the files
 			Example:	gt[0] =		["x", "y", "vx", "vy", "psi", "z"] of MAV 1 (gt[1] for MAV 2)
-						onb[0] =	["id", "id_other", "rssi", "x_rel", "y_rel", "vx", "vy", "vx_other", "vy_other", "psi", "psi_other", "z_rel"] of MAV 1 (onb[1] for MAV 2)
+					onb[0] =	["id", "id_other", "rssi", "x_rel", "y_rel", "vx", "vy", "vx_other", "vy_other", "psi", "psi_other", "z_rel"] of MAV 1 (onb[1] for MAV 2)
 		* onb_avg: list containing the average of the ["rssi", "x_rel", "y_rel", z_rel] measurements of the two MAVs
 		* gt_rel: ground true relative ["x", "y", "z"] positions of the two MAVs
 	"""
@@ -39,7 +39,7 @@ def get_data(flight=1):
 	# Extract all of the measurements from the text files to put them in lists
 	for type in types:
 		if type:	# If data is from ground-truth
-			gt.append(extract_from_txt(txt[i], gt_col))		# gt.append [time, vx, vy, psi, z] for instance
+			gt.append(extract_from_txt(txt[i], gt_col))	# gt.append [time, vx, vy, psi, z] for instance
 		else:		# Data is from on-board
 			onb.append(extract_from_txt(txt[i], onb_col))	# onb.append [time, vx, vy, rssi] for instance
 		i += 1
@@ -69,7 +69,7 @@ def abs_to_rel(d, measurements):
 	"""
 	d_rel = []
 	coord = ["x", "y", "z"]
-	for i_d in coord:							# for each coordinate...
+	for i_d in coord:					# for each coordinate...
 		mes = measurements[i_d + "_rel"]		# get the measurement list for that coordinate
 		d_rel_t01 = d[0][i_d] - d[1][i_d]		# try to get the relative measurements by doing mes_1 - mes_2...
 		d_rel_t10 = d[1][i_d] - d[0][i_d]		# or mes_2 - mes_1
@@ -121,22 +121,22 @@ def extract_from_txt(txt, col):
 	Outputs:
 		* 2D array containing the extracted data
 	"""
-	v_pos = [col.index("vx"), col.index("vy")]								# Indexes of the velocities
+	v_pos = [col.index("vx"), col.index("vy")]		# Indexes of the velocities
 	rslt = []																# PLaceholder for the return list
 	last_const = False
 	this_const = False
 	last_d = []
 	i = 0
 	lines = txt.split("\n")
-	for line in lines:														# For every line in the text...
-		d_t = line.split("\t")												# Split the columns
+	for line in lines:					# For every line in the text...
+		d_t = line.split("\t")				# Split the columns
 		if "previous" not in locals():
 			previous = np.zeros(len(d_t))
-		if len(d_t) != 1:													# Ignore if the line was empty
-			d = [float(i) for i in d_t]										# Convert to floats
+		if len(d_t) != 1:				# Ignore if the line was empty
+			d = [float(i) for i in d_t]		# Convert to floats
 			this_const, previous = remove_stationary(d, v_pos, previous)	# Check if the drone is in motion
-			if i > 0 and not(this_const) and not(last_const):				# If the drone is currently in a moving phase...
-				rslt.append(last_d)											# append the measurements to the return list
+			if i > 0 and not(this_const) and not(last_const):		# If the drone is currently in a moving phase...
+				rslt.append(last_d)					# append the measurements to the return list
 			i += 1
 			last_d = d
 			last_const = this_const
