@@ -1,15 +1,7 @@
 """
-@author: Rudi Smits & Jérémie Gaffarel - TU Delft - Faculty of Aerospace Engineering - BSc 2 (2018-2019)
+@author: Jérémie Gaffarel & Rudi Smits - TU Delft - Faculty of Aerospace Engineering - BSc 2 (2018-2019)
 
 This module is meant to filter the noisy measurements of MAVs, by the mean of an Extended Kalman FIlter (EKF)
-
-hhhhhhhhhhhy -hhh+    `hhhs   /hhhhyyo:              `h+   `sddo      
-ssssMMMNssss :MMMs    `MMMd   sM+``.-+mN/            .My   oM/    hh  
-    NMMd     :MMMs    `MMMd   sM/     `dM-  -shyhy:  .My -ymMhy:/yMNyy
-    NMMd     :MMMs    `MMMd   sM/      oMo /M+   +M+ .My   sM-    Nm  
-    NMMd     :MMMy    .MMMd   sM/      hM: dMysssyds .My   sM-    Nm  
-    NMMd     `dMMMs/:+mMMM/   sM/    -hMo  sM:   -s: .My   sM-    Nm  
-    dmmh       /ymNMMMNdo.    omdddddho.    odhyydo` .ms   om-    yNhy
 """
 
 import numpy as np
@@ -81,13 +73,28 @@ def init_R(s_m=5, s_v=0.2, s_psi=0.2, s_z=0.2):
 	return R
 
 def kalman_filter(time, rssi, gt, gt_rel, s_q=[0.1, 0.5], s_r=[5,0.2], optimisation=False):
+	""" Kalman filter
+	* Inputs:
+		- time: list containing the time at wich each measurement was taken
+		- rssi: noisy RSSI between the two MAVs
+		- gt: ground-true measurements
+		- gt_rel: ground-true relative measurements
+		- s_q = [s_a, s_b]: (optional) s_a and s_b are here the Standard Deviations (SD) used in the Q matrix of the filter
+		- s_r = [s_a, s_b]: (optional) same for R matrix
+		- optimisation: boolean: (optional) if True, no additional noise is added to the ground-true measurements
+	* Outputs:
+		- x_filter: dict containing x/y/z_rel, vx/vy, vx/vy_other, psi, psi_other
+		- d/b/vel/rssi_f: filtered range/bearing/absolute velocity/rssi
+		- d/b/vel_g: ground-true range/bearing/velocity
+		- d_unf: unfiltered range
+	"""
 	n = len(time)
 	x_filter = []
 	rssi_out = []
 	# x = [x, y, vx, vy, vx_other, vy_other, psi, psi_other, z]
-	# initialised velocities shall be non-zero
+	# Initialised vx and vy shall be non-zero
 	x = np.mat([[0.], [0.], [1.], [1.], [0.], [0.], [0.], [0.], [0.]])
-    # Initialise matrices; R, Q are constant
+    	# Initialise matrices; R, Q are constant
 	P = np.mat(init_P())
 	Q = init_Q(s_p=s_q[0], s_v=s_q[1], s_psi=s_q[1], s_z=s_q[1])
 	R = init_R(s_m=s_r[0], s_v=s_r[1], s_psi=s_r[1], s_z=s_r[1])
@@ -96,23 +103,23 @@ def kalman_filter(time, rssi, gt, gt_rel, s_q=[0.1, 0.5], s_r=[5,0.2], optimisat
 	Z = np.empty((8,n))
 
 	noise = []
-	# Create *ramdom* noise lists, with a normal distribution (mean=0, sd=0.2)
+	# Create *random* noise lists, with a normal distribution (mean=0, SD=0.2)
 	for i in range(8):
 		if not optimisation:
 			noise.append(np.random.normal(0, 0.2, n))
 		else:
-			noise.append(np.zeros(n))	# Do not use noise if trying to optimise 
+			noise.append(np.zeros(n))	# Do not use noise while optimising
 
 	# Initialise the measurement array
 	# Add the random noise to the ground truth measurements. Because the Kalman Filter needs noise to work properly
-	Z[0] = rssi							# RSSI
+	Z[0] = rssi				# RSSI
 	Z[1] = gt[0]["vx"] + noise[1]		# v_x MAV 1
 	Z[2] = gt[0]["vy"] + noise[2]		# v_y MAV 1
 	Z[3] = gt[0]["psi"] + noise[3]		# psi 
 	Z[4] = gt[1]["vx"] + noise[4]		# vx_other
 	Z[5] = gt[1]["vy"] + noise[5]		# vx_other
-	Z[6] = gt[1]["psi"]	+ noise[6]		# psi_other
-	Z[7] = noise[7]						# z_rel (assumed to be 0 at all times)
+	Z[6] = gt[1]["psi"] + noise[6]		# psi_other
+	Z[7] = noise[7]				# z_rel (assumed to be 0 at all times)
 	Z = Z.T
 
 	# Run the filter steps for each measurement
@@ -123,34 +130,34 @@ def kalman_filter(time, rssi, gt, gt_rel, s_q=[0.1, 0.5], s_r=[5,0.2], optimisat
 		else:
 			dt = 0.3
 
-		z = Z[t].reshape((8,1)) # get the measurement
-		A = get_A(dt)			# get the model, with the correct time step
+		z = Z[t].reshape((8,1))			# get the measurement
+		A = get_A(dt)				# get the model, with the correct time step
 
 		# Prediction step
 		x_p = A * x				# state prediction
-		z_p = get_h(x_p)		# measurement predicition
+		z_p = get_h(x_p)			# measurement predicition
 
-		P = A * P * A.T + Q		# covariance matrix prediction
+		P = A * P * A.T + Q			# covariance matrix prediction
 		
 		# Update step
-		H = get_H(x_p)			# compute the Jacobian of the predicted state matrix
+		H = get_H(x_p)				# compute the Jacobian of the predicted state matrix
 		P1 = P * H.T
 		K = P1 * np.linalg.inv(H * P1 + R)	# compute the Kalman Gain
 		
-		x = x_p + K * (z - z_p)				# update the state
+		x = x_p + K * (z - z_p)			# update the state
 		P = (np.identity(9) - K * H) * P	# update the covariance matrix
 
-		x_filter[t] = x.reshape(9)			# save the filtered measurement
+		x_filter[t] = x.reshape(9)		# save the filtered measurement
 		
 	col = ["x_rel", "y_rel", "vx", "vy", "vx_other", "vy_other", "psi", "psi_other", "z_rel"]
 	x_filter = dict(zip(col, x_filter.T))
-	d_g = np.sqrt(gt_rel["x"] ** 2 + gt_rel["y"] ** 2 + gt_rel["z"] ** 2)
-	b_g = np.arctan2(gt_rel["y"], gt_rel["x"])
-	d_f = np.sqrt(x_filter["x_rel"] ** 2 + x_filter["y_rel"] ** 2 + x_filter["z_rel"] ** 2)
-	b_f = np.arctan2(x_filter["y_rel"], x_filter["x_rel"])
-	d_unf = np.power([10] * len(time), (rssi + 68) / (-20))
-	vel_f = np.sqrt((x_filter["vx"]) ** 2 + (x_filter["vy"]) ** 2)
-	vel_g = np.sqrt((gt[1]["vx"] - gt[0]["vx"]) ** 2 + (gt[1]["vy"] - gt[0]["vy"]) ** 2)
-	rssi_f = -68 - 20 * np.log10(d_f)
+	d_g = np.sqrt(gt_rel["x"] ** 2 + gt_rel["y"] ** 2 + gt_rel["z"] ** 2)			# Ground true range
+	b_g = np.arctan2(gt_rel["y"], gt_rel["x"])						# Ground true bearing
+	d_f = np.sqrt(x_filter["x_rel"] ** 2 + x_filter["y_rel"] ** 2 + x_filter["z_rel"] ** 2)	# Filtered range
+	b_f = np.arctan2(x_filter["y_rel"], x_filter["x_rel"])					# Filtered bearing
+	d_unf = np.power([10] * len(time), (rssi + 68) / (-20))					# Unfiltered range
+	vel_f = np.sqrt((x_filter["vx"]) ** 2 + (x_filter["vy"]) ** 2)				# Filtered velocity
+	vel_g = np.sqrt((gt[1]["vx"] - gt[0]["vx"]) ** 2 + (gt[1]["vy"] - gt[0]["vy"]) ** 2)	# Ground true velocity
+	rssi_f = -68 - 20 * np.log10(d_f)														# Filtered RSSI
 
 	return x_filter, d_g, d_f, d_unf, b_g, b_f, vel_g, vel_f, rssi_f
