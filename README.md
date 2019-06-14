@@ -79,7 +79,7 @@ It takes the following inputs:
 It then outputs the followings:
 * x_filter: dict containing x/y/z_rel, vx/vy, vx/vy_other, psi, psi_other
 * d/b/vel/rssi_f: filtered range/bearing/absolute velocity/rssi
-* d/b/vel_g: ground-true range/baering/velocity
+* d/b/vel_g: ground-true range/bearing/velocity
 * d_unf: unfiltered range
 
 Here is how this module can be called:
