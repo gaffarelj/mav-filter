@@ -9,6 +9,17 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 def plot(time, x_f, x_g, x_u, ylabel, fname, simchoice, it0=0, ite=-1):
+	""" Plot function
+	* Inputs:
+		- time: for x-axis
+		- x_f: filtered data
+		- x_g: ground true data
+		- x_u: unfiltered data (ignored if list on len 1)
+		- ylabel: label of the y-axis
+		- fname: name of the plot
+		- simchoice: 1=simulation, else=real flight
+	"""
+	# Define path of where to save the plot
 	if simchoice == 1:
 		fname = "plots/sims/" + fname + ".pdf"
 	else:
@@ -26,6 +37,11 @@ def plot(time, x_f, x_g, x_u, ylabel, fname, simchoice, it0=0, ite=-1):
 	plt.close()
 
 def save_csv(data, line):
+	""" Save CSV
+	* Inputs:
+		- data [list]: data to save in the file
+		- line [int]: line number at which to save the data
+	"""
 	fname = "results.csv"
 	f = open(fname, "r")
 	lines = f.readlines()
@@ -37,7 +53,14 @@ def save_csv(data, line):
 		file.writelines(lines)
 
 def get_choice(s, e, message):
+	""" Get choice:
+	* Inputs:
+		- s: start of range in which answer should be
+		- e: end of range in which answer should be
+		- message: message that should be printed
+	"""
 	choice = -1
+	# While the choice is not within the specified range, keep asking
 	while not (choice in np.arange(s, e + 1)):
 		try:
 			choice = int(input(message))
@@ -46,23 +69,31 @@ def get_choice(s, e, message):
 	return choice
 
 def get_correlation(noise, para, name):
+	""" Get correlation
+	* Inputs:
+		- noise
+		- parameter for which to find a correlation with the noise
+		- name: name of the parameter
+	"""
+	# Find the correlation using numpy.corrcoef
 	corre = np.corrcoef(para, noise)[0][-1]
 	print("\t", name, corre)
 	return corre
 
-sim_choice = get_choice(0, 1, "Enter 0 for flight data or 1 for the simulation: ")
+sim_choice = get_choice(0, 1, "Enter 0 for flight data or 1 for a simulation: ")
 if sim_choice == 1:
-	sim_case = get_choice(1, 10, "Simulation to run [1-10]: ")
+	sim_case = get_choice(1, 10, "Simulation to run [1-10]: ")		# Ask for simulation case
 	time = np.arange(0, 120, 0.2)
 	print("Running the simulation...")
-	rssi_unf, gt, onb_avg, gt_rel = simulation.simulate(time, sim_case)
+	rssi_unf, gt, onb_avg, gt_rel = simulation.simulate(time, sim_case)	# Get simulation flight data
 else:
-	f_choice = get_choice(1, 4, "Flight to filter [1-4]: ")
+	f_choice = get_choice(1, 4, "Flight to filter [1-4]: ")			# Ask for flight number
 	print("Opening Data file...")
 	sim_case = f_choice
-	gt, onb, onb_avg, gt_rel, time = data.get_data(f_choice)
+	gt, onb, onb_avg, gt_rel, time = data.get_data(f_choice)		# Get real test flight data
 	rssi_unf = np.array(onb_avg["rssi"])
 
+# Specify the flight beginning and ending for the plots by switching the comments of the next 6 lines
 #t0 = 50
 #te = 110
 #it0 = np.where(time >= t0)[0][0]
@@ -72,20 +103,24 @@ ite = -1
 
 opti_choice = get_choice(0, 1, "Enter 0 for direct filtering or 1 for optimisation: ")
 if opti_choice == 0:
+	#s_r, s_q = [5, 0.2], [0.1, 0.5]
+	# Default SDs for the R and Q matrices are the optimised ones from the average of four flights
 	s_r, s_q = [11.44823232, 0.160505051], [0.0275, 0.183080808]
 else:
+	# Run the optimisation script to find the best SDs for the specified flight
 	s_r, s_q, error = optimiser.optimise(time, rssi_unf, gt, gt_rel, fnumber=sim_case, sim=(sim_choice == 1))
 
-# x_filter = ["x_rel", "y_rel", "vx", "vy", "vx_other", "vy_other", "psi", "psi_other", "z_rel"]
 print("Running the Kalman Filter...")
+# x_filter = ["x_rel", "y_rel", "vx", "vy", "vx_other", "vy_other", "psi", "psi_other", "z_rel"]
 x_filter, d_g, d_f, d_unf, b_g, b_f, vel_g, vel_f, rssi_f = filter.kalman_filter(time, rssi_unf, gt, gt_rel, s_r=s_r, s_q=s_q)
 
-# Getting correlation between noise and different parameters
+# Getting correlation between noise in range and different parameters
 noise = d_unf - d_f
 print("Correlations with noise:")
-corre_range = get_correlation(noise, d_f, "range")
-corre_vel = get_correlation(noise, vel_f, "velocity")
-corre_bearing = get_correlation(noise, b_f, "bearing")
+corre_range = get_correlation(noise, d_f, "range")	# Noise in range and range
+corre_vel = get_correlation(noise, vel_f, "velocity")	# Noise in range and velocity
+corre_bearing = get_correlation(noise, b_f, "bearing")	# Noise in range and bearing
+# Save the optimised SDs in a csv file if the optimisation script was run
 if sim_choice == 0 and opti_choice == 1:
 	save_csv(["Flight", "R a", "R b", "Q a", "Q b", "average range error [m]", "correlations:", "range", "velocity", "bearing"], 0)
 	save_csv([str(i) for i in [sim_case, s_r[0], s_r[1], s_q[0], s_q[1], error, "", corre_range, corre_vel, corre_bearing]], sim_case)
@@ -93,8 +128,9 @@ elif sim_choice == 1 and opti_choice == 1:
 	save_csv(["Simulation", "R a", "R b", "Q a", "Q b", "average range error [m]", "correlations:", "range", "velocity", "bearing"], 10)
 	save_csv([str(i) for i in [sim_case, s_r[0], s_r[1], s_q[0], s_q[1], error, "", corre_range, corre_vel, corre_bearing]], sim_case + 10)
 
-# PLOTS of x-relative, y-relative, filter vs no filter and relative bearing
+# PLOTS
 if sim_choice == 1:
+	# Show the plot of the flight path of the two MAVs if the flight is from a simulation
 	plt.plot(onb_avg[0]["x"][it0:ite], onb_avg[0]["y"][it0:ite], label="MAV 1", linewidth=1, marker="1")
 	plt.plot(onb_avg[1]["x"][it0:ite], onb_avg[1]["y"][it0:ite], label="MAV 2", linewidth=1, marker="2")
 	plt.ylabel("Y position [m]")
