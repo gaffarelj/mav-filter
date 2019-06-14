@@ -2,14 +2,6 @@
 @author: Jérémie Gaffarel & Rudi Smits - TU Delft - Faculty of Aerospace Engineering - BSc 2 (2018-2019)
 
 This module is meant to open MAV flight measurements
-
-hhhhhhhhhhhy -hhh+    `hhhs   /hhhhyyo:              `h+   `sddo      
-ssssMMMNssss :MMMs    `MMMd   sM+``.-+mN/            .My   oM/    hh  
-    NMMd     :MMMs    `MMMd   sM/     `dM-  -shyhy:  .My -ymMhy:/yMNyy
-    NMMd     :MMMs    `MMMd   sM/      oMo /M+   +M+ .My   sM-    Nm  
-    NMMd     :MMMy    .MMMd   sM/      hM: dMysssyds .My   sM-    Nm  
-    NMMd     `dMMMs/:+mMMM/   sM/    -hMo  sM:   -s: .My   sM-    Nm  
-    dmmh       /ymNMMMNdo.    omdddddho.    odhyydo` .ms   om-    yNhy
 """
 
 import numpy as np
@@ -77,14 +69,15 @@ def abs_to_rel(d, measurements):
 	"""
 	d_rel = []
 	coord = ["x", "y", "z"]
-	for i_d in coord:	# for each coordinate...
-		mes = measurements[i_d + "_rel"]	# get the measurement list for that coordinate
-		d_rel_t01 = d[0][i_d] - d[1][i_d]	# try to get the relative measurements by doing mes_1 - mes_2...
-		d_rel_t10 = d[1][i_d] - d[0][i_d]	# or mes_2 - mes_1
-		# compute error for 1 - 2 and 2 - 1
+	for i_d in coord:							# for each coordinate...
+		mes = measurements[i_d + "_rel"]		# get the measurement list for that coordinate
+		d_rel_t01 = d[0][i_d] - d[1][i_d]		# try to get the relative measurements by doing mes_1 - mes_2...
+		d_rel_t10 = d[1][i_d] - d[0][i_d]		# or mes_2 - mes_1
+		# Compute error for 1 - 2 and 2 - 1
 		e01 = sum(np.fabs(mes - d_rel_t01))	
 		e10 = sum(np.fabs(mes - d_rel_t10))
-		if e01 < e10 and i_d != "y" or e01 > e10:	# define the relative measurements as the ones giving the lowest error
+		# Define the relative measurements as the ones giving the lowest error
+		if e01 < e10 and i_d != "y" or e01 > e10:	
 			d_rel.append(d_rel_t10)
 		else:
 			d_rel.append(d_rel_t01)
@@ -100,7 +93,8 @@ def same_size(time, d):
 	rtrn = dict()
 	for key, x in d.items():
 		if key != "time":
-			sync = np.interp(time, d["time"], x) # linearly interpolate the data to sync it on the defined time list
+			# Linearly interpolate the data to sync it on the defined time list
+			sync = np.interp(time, d["time"], x) 
 			rtrn[key] = sync
 	return rtrn
 
@@ -127,19 +121,19 @@ def extract_from_txt(txt, col):
 	Outputs:
 		* 2D array containing the extracted data
 	"""
-	v_pos = [col.index("vx"), col.index("vy")]	# Indexes of the velocities
-	rslt = []		# PLaceholder for the return list
+	v_pos = [col.index("vx"), col.index("vy")]								# Indexes of the velocities
+	rslt = []																# PLaceholder for the return list
 	last_const = False
 	this_const = False
 	last_d = []
 	i = 0
 	lines = txt.split("\n")
-	for line in lines:			# For every line in the text...
-		d_t = line.split("\t")	# Split the columns
+	for line in lines:														# For every line in the text...
+		d_t = line.split("\t")												# Split the columns
 		if "previous" not in locals():
 			previous = np.zeros(len(d_t))
-		if len(d_t) != 1:		# Ignore if the line was empty
-			d = [float(i) for i in d_t]		# Convert to floats
+		if len(d_t) != 1:													# Ignore if the line was empty
+			d = [float(i) for i in d_t]										# Convert to floats
 			this_const, previous = remove_stationary(d, v_pos, previous)	# Check if the drone is in motion
 			if i > 0 and not(this_const) and not(last_const):				# If the drone is currently in a moving phase...
 				rslt.append(last_d)											# append the measurements to the return list
